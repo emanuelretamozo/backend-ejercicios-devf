@@ -1,0 +1,144 @@
+CREATE DATABASE donRufino;
+
+USE  donRufino;
+
+
+CREATE TABLE productos (
+id_producto INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+nombre VARCHAR(255) NOT NULL,
+descriptionP VARCHAR(255) NOT NULL,
+precio DECIMAL NOT NULL,
+sku VARCHAR(255) NULL);
+
+
+CREATE TABLE clientes (
+id_cliente INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+nombre VARCHAR(255) NOT NULL,
+apellido VARCHAR(255) NOT NULL,
+email VARCHAR(255) NOT NULL,
+telefono VARCHAR(11) NOT NULL,
+direccion VARCHAR(255) NOT NULL,
+codigo_postal VARCHAR(255) NOT NULL,
+ciudad VARCHAR(255) NOT NULL);
+
+
+CREATE TABLE ventas (
+id_venta INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+id_cliente INT,
+FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente),
+id_producto INT,
+FOREIGN KEY (id_producto) REFERENCES productos(id_producto),
+cantidad INT NOT NULL);
+
+
+INSERT INTO productos (nombre, descriptionP, precio, sku) VALUES 
+('arroz', 'de medio kilo', 5, '12jd'),
+('leche', 'de medio litro', 4, '12je'),
+('azucar', 'de medio kilo', 3, '12jf'),
+('maca', 'de medio kilo', 17, '12jg'),
+('manzana', 'de medio kilo', 2, '12jh'),
+('durazno', 'medio kilo', 5, '12ji'),
+('coliflor', 'medio kilo', 2, '12jj'),
+('avena', 'medio kilo', 1, '12jk'),
+('aceite', 'de medio litro', 16, '12jl'),
+('pollo', 'medio kilo', 8, '12jm');
+
+
+INSERT INTO clientes (nombre, apellido, email, telefono, direccion, codigo_postal, ciudad) VALUES
+('Victor', 'Torres', 'victor@gmail.com', '1234-244-12', 'las pausanias 213', 'mex2116', 'CANCUN'),
+('Rafael', 'Quintero', 'rafael@gmail.com', '1233-244-17', 'las torres 419', 'mex2117', 'Monterrey'),
+('ANA','TORRES','ANA@GMAIL','99312312','CALLE1','43','MONTERREY'),
+('LUCIA','GARCIA','LUCIA@GMAIL','99334512','CALLE3','43','MONTERREY'),
+('JUAN','LOPEZ','JUAN@GMAIL','99313242','CALLE7','43','CANCUN'),
+('PEDRO','JIMENEZ','PEDRO@GMAIL','65312312','CALLE3','43','MONTERREY'),
+('MARIA','LEON','MARIA@GMAIL','99312256','CALLE32','43','GUADALAJARA'),
+('LAURA','NAVARRO','LAURA@GMAIL','993123452','CALLE23','43','MONTERREY'),
+('JULIO','FLORES','JULIO@GMAIL','99235312','CALLE3','43','CANCUN'),
+('DANIEL','LINCH', 'DANIEL@GMAIL.COM', '99235312', 'CALLE4', '4', 'GUADALAJARA'),
+('WALTER','LINCH', 'WALTER@GMAIL.COM', '99235313', 'CALLE5', '5', 'QUINTANA ROO'),
+('BETSY','SANDOVAL', 'BETSY@GMAIL.COM', '99235314', 'CALLE6', '6', 'SIERRA TARAHUMARA');
+
+
+INSERT INTO ventas (id_cliente, id_producto, cantidad) VALUES 
+(1, 1, 15),
+(1, 2, 14),
+(1, 3, 13),
+(1, 4, 12),
+(1, 5, 10),
+(1, 6, 09),
+(1, 7, 08),
+(1, 8, 07),
+(1, 9, 06),
+(1, 10, 05),
+(2, 2, 16),
+(3, 3, 17),
+(4, 3, 11),
+(5, 5, 10),
+(6, 6, 18),
+(7, 6, 09),
+(8, 8, 19),
+(9, 9, 20),
+(10, 10, 21);
+
+
+-- ID de los clientes de la Ciudad de Monterrey.
+SELECT id_cliente, nombre FROM clientes WHERE ciudad = 'Monterrey';
+
+
+-- ID y descripción de los productos que cuesten menos de 15 pesos.
+SELECT id_producto, nombre, descriptionP FROM productos WHERE precio < 15;
+
+
+-- ID y nombre de los clientes, cantidad vendida, y descripción del producto, en las
+-- ventas en las cuales se vendieron más de 10 unidades.
+-- SELECT id_cliente, cantidad FROM ventas JOIN descriptionP ON ventas.id_producto = productos.id_producto WHERE cantidad > 10;
+SELECT C.ID_CLIENTE , C.nombre, V.CANTIDAD, P.descriptionP FROM CLIENTES C, VENTAS V, PRODUCTOS P 
+WHERE C.ID_CLIENTE = V.ID_CLIENTE AND P.ID_PRODUCTO = V.ID_PRODUCTO AND CANTIDAD > 10;
+
+
+-- ID y nombre de los clientes que no aparecen en la tabla de ventas (Clientes que no
+-- han comprado productos).
+SELECT id_cliente, nombre FROM clientes WHERE id_cliente NOT IN (SELECT id_cliente FROM ventas);
+
+
+-- ID y nombre de los clientes que han comprado todos los productos de la empresa.
+SELECT id_cliente, nombre FROM clientes c 
+	WHERE (SELECT COUNT(DISTINCT id_producto) 
+		FROM ventas v 
+			WHERE c.id_cliente = v.id_cliente) = (SELECT COUNT(*) FROM productos); 
+
+
+-- ID y nombre de cada cliente y la suma total (suma de cantidad) de los productos
+-- que ha comprado.
+-- SELECT id_cliente, nombre, totalComprado  FROM clientes JOIN
+-- (SELECT id_cliente AS comprador, SUM(cantidad) AS totalComprado
+-- FROM ventas
+-- GROUP BY id_cliente) AS productos;
+
+select sum(v1.cantidad) as CantidadTotal, c1.nombre
+ from  ventas v1 inner join clientes c1 on v1.id_cliente = c1.id_cliente inner join
+ productos p on p.id_producto = v1.id_producto
+group by v1.id_cliente;
+
+-- ID de los productos que no han sido comprados por clientes de Guadalajara.
+SELECT DISTINCT sku AS idProducto, nombre AS nombreProducto
+	FROM productos JOIN 
+		(SELECT nombre AS nombreCliente 
+			FROM clientes WHERE ciudad != 'Guadalajara') 
+				AS clienteBuscado;
+
+
+-- ID de los productos que se han vendido a clientes de Monterrey 
+-- y que también se
+-- han vendido a clientes de Cancún.
+
+SELECT DISTINCT id_producto FROM clientes JOIN ventas WHERE ciudad = 'monterrey'
+AND id_producto IN (SELECT id_producto                                              
+FROM clientes JOIN ventas
+    WHERE ciudad = 'cancun');
+
+
+-- Nombre de las ciudades en las que se han vendido todos los productos.
+SELECT ciudad FROM clientes JOIN ventas GROUP BY ciudad 
+	HAVING 
+		COUNT(DISTINCT id_producto) = (SELECT COUNT(*) FROM productos);
