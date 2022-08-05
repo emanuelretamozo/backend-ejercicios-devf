@@ -1,15 +1,18 @@
 import express from "express";
-import main from "./index.js";
+import  getUser  from "./db.js";
 
 const app = express();
 const port = 3000;
 
 
-
-app.get("/api/suma", (req, res) => {
-  res.json({ resultado: main() });
+app.get("/api/usuario", (_, res) => {
+  res.json({ 
+   data: getUser()
+    });
 });
+
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
+  console.log(`Example app listening on port ${port} 👆🏽`);
 });
+
