@@ -1,2 +1,2 @@
 # backend-ejercicios-devf
-ejercicios del proyecto final dl módulo de backend devf
+ejercicios del proyecto final del módulo de backend devf
