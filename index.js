@@ -1,12 +1,11 @@
-import express from "express";
-const app = express();
-const port = 3000;
+import sum from "./operations.js";
 
-app.get("/api", (req, res) => {
-  res.json({ mensaje: "¡Hola Mundo!" });
-});
+const main = () => {
+  const a = 5;
+  const b = 7;
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
-});
- 
+  const addSum = sum(a, b);
+  return addSum
+};
+
+export default main;
